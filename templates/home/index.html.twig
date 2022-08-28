@@ -1,0 +1,58 @@
+{% extends "base.html.twig" %}
+
+{% block title %}
+    Hello ;p
+{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+{% endblock %}
+
+{% block javascripts %}
+    <script src="js/validation.js" defer></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container col-md-5 mt-5 border border-dark ">
+        <h1>Form</h1>
+        <form name="myForm" id='myForm' method="POST" action="{{ path('app_code') }}" onsubmit="return validateForm()" >
+            <!-- user code input -->
+            <div class="form-outline mb-4">
+                <input type="text"  name="code" id="form2Example1" class="form-control "  />
+                <label class="form-label" for="form2Example1">Enter your user code</label>
+            </div>
+
+
+            <!-- Submit button -->
+            <div class="d-flex justify-content-center">
+                <button type="submit" id="submit" class="btn btn-primary block-center mb-4 ">Sign in</button>
+            </div>
+        </form>
+        <hr>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Number</th>
+                <th scope="col">Flag</th>
+                <th scope="col">Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% set id = 1 %}
+            {% for code in codes %}
+                <tr>
+                    <th scope="row">{{ id }}</th>
+                    <td>{{ code.number }}</td>
+                    <td>{{ code.flag }}</td>
+                    <td>{{ code.date|date("d/m/Y H:i:s") }}</td>
+                </tr>
+            {% set id = id +1 %}
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
