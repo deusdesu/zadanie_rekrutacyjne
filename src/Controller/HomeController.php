@@ -11,7 +11,7 @@ use App\Entity\UserCode;
 
 class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home',methods: 'GET')]
+    #[Route('/', name: 'app_home',methods: 'GET')]
     public function index(ManagerRegistry $doctrine): Response
     {
         //pobiera dane z  bazy

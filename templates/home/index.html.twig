@@ -15,7 +15,7 @@
 {% block body %}
     <div class="container col-md-5 mt-5 border border-dark ">
         <h1>Form</h1>
-        <form name="myForm" id='myForm' method="POST" action="{{ path('app_code') }}" onsubmit="return validateForm()" >
+        <form name="myForm" id='myForm' method="POST" action="{{ path('app_code') }}"  onsubmit="return validateForm()">  <!--onsubmit="return validateForm()"-->
             <!-- user code input -->
             <div class="form-outline mb-4">
                 <input type="text"  name="code" id="form2Example1" class="form-control "  />
