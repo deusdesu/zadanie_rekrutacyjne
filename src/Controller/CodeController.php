@@ -7,6 +7,7 @@ use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,15 +46,15 @@ class CodeController extends AbstractController
      *
      * funkcja wywołuje walidacje, po poprawnej walidacji dodaje kod do bazy
      */
-    private function addCode(string $code, ManagerRegistry $doctrine)
+    private function addCode(string $code, ManagerRegistry $doctrine): array
     {
         //spr czy kod jest w bazie
         $czyJestWBazie = $doctrine->getRepository(UserCode::class)->findOneBy(['number' => $code]);
-        // dd($czyJestWBazie);
         if ($czyJestWBazie !== null) {
             return [false, ["Kod $code jest juz w bazie."]];
         }
         $errors = $this->validation($code);
+
         //jeżeli są błędy, zwróć błędy walidacji
         if (!empty($errors)) {
             return [false, $errors];
@@ -71,15 +72,13 @@ class CodeController extends AbstractController
         return [true, $errors];
     }
 
-
-
     /**
      * @param string $code
      * @return array
      *
      * funkcja do walidacji kodu
      */
-    private function validation(string $code)
+    private function validation(string $code): array
     {
         $errors = [];
         $validator = Validation::createValidator();
@@ -88,16 +87,19 @@ class CodeController extends AbstractController
             new Length(['min' => 15], minMessage: 'Code must have 15 characters.'),
             new Length(['max' => 15], maxMessage: 'Code must have 15 characters.'),
             new NotBlank(),
-            //TEST 2    użyj wyrażenia regularnego 14 liter + dowolny znak 0-9 lub a-Z
 
+            //TEST 2    użyj wyrażenia regularnego 14 liter + dowolny znak 0-9 lub a-Z
             new Regex(pattern: '/[0-9]{14}[a-zA-Z0-9]{1}/', message: "Code does not match the formula: 14 numbers, 1 number, or an alphanumeric character. Example: 00000512752451M."),
+
             //TEST 3    00001236256212M nie spełnia warunku
             new NotEqualTo('00001236256212M'),
         ]);
+
         //dodanie elementów do tablicy $errors
         if (0 !== count($violationCode)) {
             $errors = $this->mergeArrays($errors, $violationCode);
         }
+
         //suma ma byc dzielona przez 2, bez literki
         $amount = 0;
 
@@ -125,7 +127,7 @@ class CodeController extends AbstractController
      * fukncja używana w validation,
      * słuzy do dodania kolejnych błędów walidacji do głownej tablicy błędów $errors w validation
      */
-    private function &check_errors($violations)
+    private function checkErrors($violations):array
     {
         $errors = [];
         foreach ($violations as $violation) {
@@ -142,12 +144,12 @@ class CodeController extends AbstractController
      * )
      * @param ManagerRegistry $doctrine
      * @param string $number
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      *
      * REST api, zwraca true jeżeli kod jest w bazie
      */
     #[Route('/api/returnCode/{number}', name: 'returnCode', methods: 'GET')]
-    public function returnCode(ManagerRegistry $doctrine, string $number)
+    public function returnCode(ManagerRegistry $doctrine, string $number): JsonResponse
     {
         //pobierz obiekt po number
         $szukanyObiekt = $doctrine->getRepository(UserCode::class)->findOneBy(['number' => $number]);
@@ -156,6 +158,7 @@ class CodeController extends AbstractController
         if ($szukanyObiekt !== null) {
             return $this->json('true');
         }
+
         //if nie istnieje to zwroc False
         return $this->json('false');
     }
@@ -169,12 +172,12 @@ class CodeController extends AbstractController
      * )
      * @param ManagerRegistry $doctrine
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      *
      * REST api, wywołuje f addCode, która waliduje kod, po poprawnej walidacji wrzuca kod do bazy
      */
     #[Route('/api/add', name: 'addCode', methods: 'POST')]
-    public function add(ManagerRegistry $doctrine, Request $request)
+    public function add(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
         $number = $request->get('number');
         if (!($this->addCode($number, $doctrine)[0])) {
@@ -200,12 +203,12 @@ class CodeController extends AbstractController
      * )
      * @param ManagerRegistry $doctrine
      * @param string $number
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      *
      * REST api sprawdza czy kod jest w bazie, jeżeli tak to go usuwa
      */
     #[Route('/api/delete/{number}', name: 'deleteCode', methods: 'DELETE')]
-    public function delete(ManagerRegistry $doctrine, string $number)
+    public function delete(ManagerRegistry $doctrine, string $number): JsonResponse
     {
         $szukanyObiekt = $doctrine->getRepository(UserCode::class)->findOneBy(['number' => $number]);
         if ($szukanyObiekt === null) {
@@ -233,9 +236,9 @@ class CodeController extends AbstractController
      *
      * f scala dwie tablice
      */
-    private function mergeArrays(array $errors, $violationCode)
+    private function mergeArrays(array $errors, $violationCode): array
     {
-        array_push($errors, ...$this->check_errors($violationCode));
+        array_push($errors, ...$this->checkErrors($violationCode));
         return $errors;
     }
 
