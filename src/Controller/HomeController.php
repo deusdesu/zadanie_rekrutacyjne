@@ -15,7 +15,6 @@ class HomeController extends AbstractController
     {
         //pobiera dane z  bazy
         $codes = $doctrine->getRepository(UserCode::class)->findBy([], ['date' => 'DESC']);
-       // dd($codes);
         return $this->render('home/index.html.twig', [
             'codes' => $codes,
         ]);

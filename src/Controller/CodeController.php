@@ -210,8 +210,8 @@ class CodeController extends AbstractController
     #[Route('/api/delete/{number}', name: 'deleteCode', methods: 'DELETE')]
     public function delete(ManagerRegistry $doctrine, string $number): JsonResponse
     {
-        $szukanyObiekt = $doctrine->getRepository(UserCode::class)->findOneBy(['number' => $number]);
-        if ($szukanyObiekt === null) {
+        $obiektyDoUsuniecia = $doctrine->getRepository(UserCode::class)->findBy(['number' => $number]);
+        if (empty($obiektyDoUsuniecia)) {
             return $this->json([
                     'message' => "Kodu: $number nie ma w bazie.",
                     'status' => '404'
@@ -220,7 +220,10 @@ class CodeController extends AbstractController
 
         }
         $entityManager = $doctrine->getManager();
-        $entityManager->remove($szukanyObiekt);
+        foreach ($obiektyDoUsuniecia as $obiekt){
+            $entityManager->remove($obiekt);
+
+        }
         $entityManager->flush();
         return $this->json([
                 'message' => "usunięto kod: $number.",
